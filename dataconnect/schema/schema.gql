@@ -1,0 +1,156 @@
+# ConnectHub GraphQL Schema for Firebase Data Connect
+
+# Enum definitions
+enum UserStatus {
+  ONLINE
+  OFFLINE
+  AWAY
+  BUSY
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  AUDIO
+  VIDEO
+  FILE
+}
+
+enum CallType {
+  VIDEO
+  AUDIO
+}
+
+enum CallStatus {
+  INCOMING
+  OUTGOING
+  MISSED
+  ANSWERED
+  DECLINED
+  ENDED
+}
+
+# User type
+type User @table(name: "users") {
+  id: UUID! @col(name: "id")
+  firebaseUid: String! @col(name: "firebase_uid")
+  name: String! @col(name: "name")
+  email: String @col(name: "email")
+  profileImageUrl: String @col(name: "profile_image_url")
+  status: UserStatus! @col(name: "status")
+  isAnonymous: Boolean! @col(name: "is_anonymous")
+  lastSeen: Timestamp! @col(name: "last_seen")
+  createdAt: Timestamp! @col(name: "created_at")
+  updatedAt: Timestamp! @col(name: "updated_at")
+  
+  # Relationships
+  sentMessages: [Message!]! @sql(select: "SELECT * FROM messages WHERE sender_id = $id")
+  conversations: [Conversation!]! @sql(select: """
+    SELECT c.* FROM conversations c 
+    JOIN conversation_participants cp ON c.id = cp.conversation_id 
+    WHERE cp.user_id = $id
+  """)
+  initiatedCalls: [Call!]! @sql(select: "SELECT * FROM calls WHERE caller_id = $id")
+  receivedCalls: [Call!]! @sql(select: "SELECT * FROM calls WHERE receiver_id = $id")
+}
+
+# Conversation type
+type Conversation @table(name: "conversations") {
+  id: UUID! @col(name: "id")
+  name: String @col(name: "name")
+  isGroup: Boolean! @col(name: "is_group")
+  creatorId: UUID @col(name: "creator_id")
+  lastMessageAt: Timestamp @col(name: "last_message_at")
+  createdAt: Timestamp! @col(name: "created_at")
+  updatedAt: Timestamp! @col(name: "updated_at")
+  
+  # Relationships
+  creator: User @sql(select: "SELECT * FROM users WHERE id = $creatorId")
+  participants: [User!]! @sql(select: """
+    SELECT u.* FROM users u 
+    JOIN conversation_participants cp ON u.id = cp.user_id 
+    WHERE cp.conversation_id = $id
+  """)
+  messages: [Message!]! @sql(select: "SELECT * FROM messages WHERE conversation_id = $id ORDER BY created_at ASC")
+  lastMessage: Message @sql(select: "SELECT * FROM messages WHERE conversation_id = $id ORDER BY created_at DESC LIMIT 1")
+}
+
+# Message type
+type Message @table(name: "messages") {
+  id: UUID! @col(name: "id")
+  conversationId: UUID! @col(name: "conversation_id")
+  senderId: UUID @col(name: "sender_id")
+  content: String @col(name: "content")
+  messageType: MessageType! @col(name: "message_type")
+  mediaUrl: String @col(name: "media_url")
+  mediaFilename: String @col(name: "media_filename")
+  mediaSize: Int @col(name: "media_size")
+  replyToId: UUID @col(name: "reply_to_id")
+  isEdited: Boolean! @col(name: "is_edited")
+  editedAt: Timestamp @col(name: "edited_at")
+  createdAt: Timestamp! @col(name: "created_at")
+  
+  # Relationships
+  conversation: Conversation! @sql(select: "SELECT * FROM conversations WHERE id = $conversationId")
+  sender: User @sql(select: "SELECT * FROM users WHERE id = $senderId")
+  replyTo: Message @sql(select: "SELECT * FROM messages WHERE id = $replyToId")
+  readReceipts: [MessageReadReceipt!]! @sql(select: "SELECT * FROM message_read_receipts WHERE message_id = $id")
+}
+
+# Call type
+type Call @table(name: "calls") {
+  id: UUID! @col(name: "id")
+  callerId: UUID @col(name: "caller_id")
+  receiverId: UUID @col(name: "receiver_id")
+  conversationId: UUID @col(name: "conversation_id")
+  callType: CallType! @col(name: "call_type")
+  status: CallStatus! @col(name: "status")
+  durationSeconds: Int! @col(name: "duration_seconds")
+  startedAt: Timestamp! @col(name: "started_at")
+  endedAt: Timestamp @col(name: "ended_at")
+  createdAt: Timestamp! @col(name: "created_at")
+  
+  # Relationships
+  caller: User @sql(select: "SELECT * FROM users WHERE id = $callerId")
+  receiver: User @sql(select: "SELECT * FROM users WHERE id = $receiverId")
+  conversation: Conversation @sql(select: "SELECT * FROM conversations WHERE id = $conversationId")
+}
+
+# ConversationParticipant type
+type ConversationParticipant @table(name: "conversation_participants") {
+  id: UUID! @col(name: "id")
+  conversationId: UUID! @col(name: "conversation_id")
+  userId: UUID! @col(name: "user_id")
+  joinedAt: Timestamp! @col(name: "joined_at")
+  lastReadAt: Timestamp! @col(name: "last_read_at")
+  
+  # Relationships
+  conversation: Conversation! @sql(select: "SELECT * FROM conversations WHERE id = $conversationId")
+  user: User! @sql(select: "SELECT * FROM users WHERE id = $userId")
+}
+
+# UserContact type
+type UserContact @table(name: "user_contacts") {
+  id: UUID! @col(name: "id")
+  userId: UUID! @col(name: "user_id")
+  contactId: UUID! @col(name: "contact_id")
+  nickname: String @col(name: "nickname")
+  isBlocked: Boolean! @col(name: "is_blocked")
+  createdAt: Timestamp! @col(name: "created_at")
+  
+  # Relationships
+  user: User! @sql(select: "SELECT * FROM users WHERE id = $userId")
+  contact: User! @sql(select: "SELECT * FROM users WHERE id = $contactId")
+}
+
+# MessageReadReceipt type
+type MessageReadReceipt @table(name: "message_read_receipts") {
+  id: UUID! @col(name: "id")
+  messageId: UUID! @col(name: "message_id")
+  userId: UUID! @col(name: "user_id")
+  readAt: Timestamp! @col(name: "read_at")
+  
+  # Relationships
+  message: Message! @sql(select: "SELECT * FROM messages WHERE id = $messageId")
+  user: User! @sql(select: "SELECT * FROM users WHERE id = $userId")
+}

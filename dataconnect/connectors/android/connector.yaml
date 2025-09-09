@@ -1,0 +1,6 @@
+# Firebase Data Connect Android Connector Configuration
+connectorId: connecthub-android
+generate:
+  kotlinSdk:
+    outputDir: "../../../app/src/main/java/com/connecthub/dataconnect"
+    package: "com.connecthub.dataconnect"

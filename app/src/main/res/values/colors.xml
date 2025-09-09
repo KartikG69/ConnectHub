@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="cream_white">#FAF9F6</color>
+    <color name="forest_green">#2D5F3F</color>
+    <color name="forest_green_light">#3A7A4F</color>
+    <color name="charcoal">#1A1A1A</color>
+    <color name="charcoal_light">#2A2A2A</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="error">#BA1A1A</color>
+    <color name="success">#4CAF50</color>
+</resources>

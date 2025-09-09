@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ConnectHub" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/forest_green</item>
+        <item name="colorPrimaryVariant">@color/forest_green_light</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/forest_green_light</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:statusBarColor">@color/forest_green</item>
+    </style>
+    
+    <style name="Theme.ConnectHub.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/forest_green</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.ConnectHub</item>
+    </style>
+</resources>

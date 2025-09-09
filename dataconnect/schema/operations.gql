@@ -1,0 +1,442 @@
+# ConnectHub GraphQL Operations for Firebase Data Connect
+
+# User Operations
+query GetUserByFirebaseUid($firebaseUid: String!) {
+  user(where: { firebaseUid: { eq: $firebaseUid } }) {
+    id
+    firebaseUid
+    name
+    email
+    profileImageUrl
+    status
+    isAnonymous
+    lastSeen
+    createdAt
+    updatedAt
+  }
+}
+
+query GetUserById($id: UUID!) {
+  user(where: { id: { eq: $id } }) {
+    id
+    firebaseUid
+    name
+    email
+    profileImageUrl
+    status
+    isAnonymous
+    lastSeen
+    createdAt
+    updatedAt
+  }
+}
+
+query SearchUsers($query: String!) {
+  users(where: { 
+    or: [
+      { name: { contains: $query } },
+      { email: { contains: $query } }
+    ]
+  }) {
+    id
+    firebaseUid
+    name
+    email
+    profileImageUrl
+    status
+    isAnonymous
+  }
+}
+
+mutation CreateUser($firebaseUid: String!, $name: String!, $email: String, $isAnonymous: Boolean!) {
+  user_insert(data: {
+    firebaseUid: $firebaseUid,
+    name: $name,
+    email: $email,
+    isAnonymous: $isAnonymous,
+    status: OFFLINE
+  }) {
+    id
+    firebaseUid
+    name
+    email
+    isAnonymous
+    createdAt
+  }
+}
+
+mutation UpdateUserStatus($id: UUID!, $status: UserStatus!, $lastSeen: Timestamp!) {
+  user_update(where: { id: { eq: $id } }, data: {
+    status: $status,
+    lastSeen: $lastSeen
+  }) {
+    id
+    status
+    lastSeen
+  }
+}
+
+mutation UpdateUserProfile($id: UUID!, $name: String!, $profileImageUrl: String) {
+  user_update(where: { id: { eq: $id } }, data: {
+    name: $name,
+    profileImageUrl: $profileImageUrl
+  }) {
+    id
+    name
+    profileImageUrl
+    updatedAt
+  }
+}
+
+# Conversation Operations
+query GetUserConversations($userId: UUID!) {
+  conversations(where: {
+    participants: { some: { id: { eq: $userId } } }
+  }, orderBy: { updatedAt: DESC }) {
+    id
+    name
+    isGroup
+    lastMessageAt
+    updatedAt
+    participants {
+      id
+      name
+      profileImageUrl
+      status
+    }
+    lastMessage {
+      id
+      content
+      messageType
+      createdAt
+      sender {
+        id
+        name
+      }
+    }
+  }
+}
+
+query GetConversationById($id: UUID!) {
+  conversation(where: { id: { eq: $id } }) {
+    id
+    name
+    isGroup
+    createdAt
+    participants {
+      id
+      name
+      profileImageUrl
+      status
+    }
+  }
+}
+
+mutation CreateDirectConversation($userId1: UUID!, $userId2: UUID!) {
+  conversation_insert(data: {
+    isGroup: false
+  }) {
+    id
+    createdAt
+  }
+}
+
+mutation CreateGroupConversation($name: String!, $creatorId: UUID!) {
+  conversation_insert(data: {
+    name: $name,
+    isGroup: true,
+    creatorId: $creatorId
+  }) {
+    id
+    name
+    createdAt
+  }
+}
+
+# Message Operations
+query GetConversationMessages($conversationId: UUID!, $limit: Int = 50) {
+  messages(
+    where: { conversationId: { eq: $conversationId } },
+    orderBy: { createdAt: DESC },
+    limit: $limit
+  ) {
+    id
+    content
+    messageType
+    mediaUrl
+    mediaFilename
+    createdAt
+    isEdited
+    editedAt
+    sender {
+      id
+      name
+      profileImageUrl
+    }
+    replyTo {
+      id
+      content
+      sender {
+        name
+      }
+    }
+  }
+}
+
+mutation SendMessage($conversationId: UUID!, $senderId: UUID!, $content: String!, $messageType: MessageType!) {
+  message_insert(data: {
+    conversationId: $conversationId,
+    senderId: $senderId,
+    content: $content,
+    messageType: $messageType
+  }) {
+    id
+    content
+    messageType
+    createdAt
+    sender {
+      id
+      name
+    }
+  }
+}
+
+mutation SendMediaMessage($conversationId: UUID!, $senderId: UUID!, $content: String, $messageType: MessageType!, $mediaUrl: String!, $mediaFilename: String!, $mediaSize: Int!) {
+  message_insert(data: {
+    conversationId: $conversationId,
+    senderId: $senderId,
+    content: $content,
+    messageType: $messageType,
+    mediaUrl: $mediaUrl,
+    mediaFilename: $mediaFilename,
+    mediaSize: $mediaSize
+  }) {
+    id
+    content
+    messageType
+    mediaUrl
+    createdAt
+    sender {
+      id
+      name
+    }
+  }
+}
+
+mutation EditMessage($messageId: UUID!, $content: String!) {
+  message_update(where: { id: { eq: $messageId } }, data: {
+    content: $content,
+    isEdited: true,
+    editedAt: "now()"
+  }) {
+    id
+    content
+    isEdited
+    editedAt
+  }
+}
+
+mutation DeleteMessage($messageId: UUID!) {
+  message_delete(where: { id: { eq: $messageId } }) {
+    id
+  }
+}
+
+# Call Operations
+query GetUserCalls($userId: UUID!) {
+  calls(where: {
+    or: [
+      { callerId: { eq: $userId } },
+      { receiverId: { eq: $userId } }
+    ]
+  }, orderBy: { createdAt: DESC }) {
+    id
+    callType
+    status
+    durationSeconds
+    startedAt
+    endedAt
+    caller {
+      id
+      name
+      profileImageUrl
+    }
+    receiver {
+      id
+      name
+      profileImageUrl
+    }
+  }
+}
+
+mutation CreateCall($callerId: UUID!, $receiverId: UUID!, $callType: CallType!, $conversationId: UUID) {
+  call_insert(data: {
+    callerId: $callerId,
+    receiverId: $receiverId,
+    callType: $callType,
+    conversationId: $conversationId,
+    status: INCOMING
+  }) {
+    id
+    callType
+    status
+    createdAt
+    caller {
+      id
+      name
+    }
+    receiver {
+      id
+      name
+    }
+  }
+}
+
+mutation UpdateCallStatus($callId: UUID!, $status: CallStatus!, $endedAt: Timestamp, $durationSeconds: Int) {
+  call_update(where: { id: { eq: $callId } }, data: {
+    status: $status,
+    endedAt: $endedAt,
+    durationSeconds: $durationSeconds
+  }) {
+    id
+    status
+    durationSeconds
+    endedAt
+  }
+}
+
+# Participant Operations
+mutation AddParticipantToConversation($conversationId: UUID!, $userId: UUID!) {
+  conversationParticipant_insert(data: {
+    conversationId: $conversationId,
+    userId: $userId
+  }) {
+    id
+    joinedAt
+    user {
+      id
+      name
+    }
+  }
+}
+
+mutation RemoveParticipantFromConversation($conversationId: UUID!, $userId: UUID!) {
+  conversationParticipant_delete(where: {
+    and: [
+      { conversationId: { eq: $conversationId } },
+      { userId: { eq: $userId } }
+    ]
+  }) {
+    id
+  }
+}
+
+mutation UpdateLastReadAt($conversationId: UUID!, $userId: UUID!, $lastReadAt: Timestamp!) {
+  conversationParticipant_update(
+    where: {
+      and: [
+        { conversationId: { eq: $conversationId } },
+        { userId: { eq: $userId } }
+      ]
+    },
+    data: { lastReadAt: $lastReadAt }
+  ) {
+    id
+    lastReadAt
+  }
+}
+
+# Contact Operations
+query GetUserContacts($userId: UUID!) {
+  userContacts(where: { userId: { eq: $userId } }) {
+    id
+    nickname
+    isBlocked
+    createdAt
+    contact {
+      id
+      name
+      email
+      profileImageUrl
+      status
+      lastSeen
+    }
+  }
+}
+
+mutation AddContact($userId: UUID!, $contactId: UUID!, $nickname: String) {
+  userContact_insert(data: {
+    userId: $userId,
+    contactId: $contactId,
+    nickname: $nickname
+  }) {
+    id
+    nickname
+    contact {
+      id
+      name
+      email
+    }
+  }
+}
+
+mutation UpdateContact($userId: UUID!, $contactId: UUID!, $nickname: String, $isBlocked: Boolean) {
+  userContact_update(
+    where: {
+      and: [
+        { userId: { eq: $userId } },
+        { contactId: { eq: $contactId } }
+      ]
+    },
+    data: {
+      nickname: $nickname,
+      isBlocked: $isBlocked
+    }
+  ) {
+    id
+    nickname
+    isBlocked
+  }
+}
+
+# Subscription Operations (Real-time)
+subscription OnNewMessage($conversationId: UUID!) {
+  messageAdded(where: { conversationId: { eq: $conversationId } }) {
+    id
+    content
+    messageType
+    mediaUrl
+    createdAt
+    sender {
+      id
+      name
+      profileImageUrl
+    }
+  }
+}
+
+subscription OnUserStatusChanged($userId: UUID!) {
+  userUpdated(where: { id: { eq: $userId } }) {
+    id
+    status
+    lastSeen
+  }
+}
+
+subscription OnIncomingCall($userId: UUID!) {
+  callAdded(where: { 
+    and: [
+      { receiverId: { eq: $userId } },
+      { status: { eq: INCOMING } }
+    ]
+  }) {
+    id
+    callType
+    status
+    caller {
+      id
+      name
+      profileImageUrl
+    }
+  }
+}

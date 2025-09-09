@@ -1,0 +1,20 @@
+# Firebase Data Connect Configuration
+specVersion: v1alpha
+serviceId: connecthub-service
+location: us-central1
+
+# PostgreSQL Database Configuration
+datasource:
+  postgresql:
+    database: connecthub
+    cloudSql:
+      instanceId: connecthub-postgres
+
+# Schema files
+schema:
+  - source: schema/schema.gql
+  - source: schema/operations.gql
+
+# Connectors
+connectors:
+  - source: connectors/android

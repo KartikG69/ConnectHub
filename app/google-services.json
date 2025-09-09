@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "546165808864",
+    "project_id": "connecthub-cffe8",
+    "storage_bucket": "connecthub-cffe8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:546165808864:android:12933c5d7c4c19990afa85",
+        "android_client_info": {
+          "package_name": "com.connecthub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "546165808864-k15mtu40hcmrr4uoo6val8a725dgoj1n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.connecthub",
+            "certificate_hash": "9244397966d09a694213e0015f1915a8d1032c7f"
+          }
+        },
+        {
+          "client_id": "546165808864-99bi49m6oapd1lemeh5naf1utdthaptp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYRhMgBTNC1VQx9lHWIvBBEJStj-02Atc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "546165808864-99bi49m6oapd1lemeh5naf1utdthaptp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
