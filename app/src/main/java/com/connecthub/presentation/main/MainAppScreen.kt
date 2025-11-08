@@ -44,13 +44,21 @@ fun MainAppScreen(
                 )
             }
             MainScreen.Calls -> {
-                CallsScreen()
+                CallsScreen(
+                    modifier = Modifier.padding(paddingValues)
+                )
             }
             MainScreen.Chats -> {
-                ChatsScreen()
+                ChatsScreen(
+                    authViewModel = authViewModel,
+                    modifier = Modifier.padding(paddingValues)
+                )
             }
             MainScreen.Contacts -> {
-                ContactsScreen()
+                ContactsScreen(
+                    authViewModel = authViewModel,
+                    modifier = Modifier.padding(paddingValues)
+                )
             }
             MainScreen.Settings -> {
                 SettingsScreen(
